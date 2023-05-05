@@ -12,8 +12,9 @@ def model():
 
     initializer = tf.keras.initializers.HeNormal(seed=0)
     # Encoding network
+    norm1 = BatchNormalization()(input_layer)
     conv_1 = Conv3D(filters=8, kernel_size=(3, 3, 3),
-                    kernel_initializer=initializer, strides=1, activation='relu')(input_layer)
+                    kernel_initializer=initializer, strides=1, activation='relu')(norm1)
     conv_2 = Conv3D(filters=16, kernel_size=(3, 3, 3),
                     kernel_initializer=initializer, strides=2, activation='relu')(conv_1)
     conv_3 = Conv3D(filters=32, kernel_size=(3, 3, 3),
@@ -37,3 +38,7 @@ def model():
     model = Model(inputs=input_layer, outputs=de_conv_5)
 
     return model
+
+
+t = model()
+print(t.summary())
