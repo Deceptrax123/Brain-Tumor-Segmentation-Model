@@ -19,7 +19,7 @@ def batch_generator(paths, batch_size):
                 img_batch = []
                 mask_batch = []
 
-        if (len(img_batch != 0)):
+        if (len(img_batch) != 0):
             yield np.stack(img_batch, axis=0), np.stack(mask_batch, axis=0)
             img_batch = []
             mask_batch = []

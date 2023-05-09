@@ -25,5 +25,4 @@ def generate_image(paths):
         normalized_sample = (sample-np.mean(sample, axis=0)
                              )/np.std(sample, axis=0)
 
-        rounded = np.around(normalized_sample, decimals=3)
-        yield rounded, mask
+        yield normalized_sample, mask

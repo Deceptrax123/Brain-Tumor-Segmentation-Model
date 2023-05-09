@@ -1,8 +1,11 @@
 #virtual environments
 .venv/
-
+.venv2/
 #Data Folder
 Data/
+
+#Logs
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
