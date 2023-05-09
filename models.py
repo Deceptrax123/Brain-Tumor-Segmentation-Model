@@ -32,6 +32,6 @@ def create():
     
     dense_layer=Dense(4,activation='softmax',kernel_initializer=initializer,use_bias=True,bias_initializer=initializer)(output_layer)
 
-    model = Model(inputs=input_layer, outputs=dense_layer)
+    model1 = Model(inputs=input_layer, outputs=dense_layer)
 
-    return model
+    return model1
