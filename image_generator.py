@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as img
+from sklearn.decomposition import PCA, IncrementalPCA
 import glob
+import os
 
 
 def get_id(path):
@@ -11,11 +13,17 @@ def get_id(path):
     return id[-1::-1]
 
 
-def generate_image(paths, size=(128, 128, 128)):
-    for path in paths:
-        example_id = get_id(path)
-        sample = np.load(path)
+def generate_image(paths):
+    for img_path in paths:
+        example_id = get_id(img_path)
+
+        sample = np.load(img_path)
+
         mask = np.load("./Data/Train/masks_reformatted/mask_" +
                        example_id+".npy")
+        # Normalization
+        normalized_sample = (sample-np.mean(sample, axis=0)
+                             )/np.std(sample, axis=0)
 
-        yield sample, mask
+        rounded = np.around(normalized_sample, decimals=3)
+        yield rounded, mask
