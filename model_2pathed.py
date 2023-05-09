@@ -45,11 +45,36 @@ def create_2pathed():
     #Concatenate both the encoding blocks
     concat_layer=Concatenate(axis=4)([conv1_e_11,conv2_e_8])
 
-    #Decoder
+    #Combined convoluted layers
     conv_e_9=Conv3D(filters=64,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(concat_layer)
     conv_e_10=Conv3D(filters=128,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_e_9)
     conv_e_11=Conv3D(filters=256,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_e_10)
     conv_e_12=Conv3D(filters=512,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_e_11)
 
-    model=Model(inputs=input_layer,outputs=conv_e_12)
+    #Max pooling layer
+    pool_e_13=MaxPooling3D(pool_size=(2,2,2))(conv_e_12)
+    
+    #Reduce to 16X16X16
+    conv_e_13=Conv3D(filters=512,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(pool_e_13)
+    conv_e_14=Conv3D(filters=512,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_e_13)
+    conv_e_15=Conv3D(filters=512,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_e_14)
+
+    #Decoder
+    #Deconvolutions
+    conv_d_1=Conv3DTranspose(filters=512,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_e_15)
+    conv_d_2=Conv3DTranspose(filters=512,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_d_1)
+    conv_d_3=Conv3DTranspose(filters=512,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_d_2)
+
+    #Upsampling
+    up_d_1=UpSampling3D(size=(2,2,2))(conv_d_3)
+
+    #Deconvolutions
+    conv_d_4=Conv3DTranspose(filters=512,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(up_d_1)
+    conv_d_5=Conv3DTranspose(filters=256,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_d_4)
+    conv_d_6=Conv3DTranspose(filters=128,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_d_5)
+    conv_d_7=Conv3DTranspose(filters=64,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_d_6)
+    
+    
+
+    model=Model(inputs=input_layer,outputs=conv_d_7)
     return model
