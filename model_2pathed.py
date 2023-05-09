@@ -74,6 +74,7 @@ def create_2pathed():
     conv_d_6=Conv3DTranspose(filters=128,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_d_5)
     conv_d_7=Conv3DTranspose(filters=64,kernel_size=(3,3,3),kernel_initializer='he_normal',activation='relu',strides=1,use_bias=True,padding='valid',bias_initializer='he_normal')(conv_d_6)
     
+    #deconvolve the 2pathed block
     
 
     model=Model(inputs=input_layer,outputs=conv_d_7)
