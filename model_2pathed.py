@@ -1,6 +1,6 @@
 import tensorflow as tf
 from keras.layers import Conv3D, Reshape, Conv3DTranspose, UpSampling3D, MaxPooling3D, Concatenate
-from keras.layers import Dropout, Input, BatchNormalization, Dense, Flatten
+from keras.layers import Dropout, Input, BatchNormalization, Dense, Flatten, Reshape
 from keras.models import Model
 import keras
 
@@ -128,8 +128,22 @@ def create_2pathed():
     conv_d_15 = Conv3DTranspose(filters=4, kernel_size=(3, 3, 3), kernel_initializer='he_normal',
                                 activation='relu', use_bias=True, bias_initializer='he_normal')(conv_d_14)
 
-    # shape obtained,flatten and dense
-    flat = Flatten()(conv_d_15)
+    # Reshape the vector
+    reshaped = Reshape((128*128*128, 4))(conv_d_15)
 
-    models = Model(inputs=input_layer, outputs=flat)
+    # Pass into a few fully connected layers
+    layer1 = Dense(4, activation='tanh', kernel_initializer="glorot_normal",
+                   use_bias=True, bias_initializer='glorot_normal')(reshaped)
+    layer2 = Dense(16, activation='tanh', kernel_initializer="glorot_normal",
+                   use_bias=True, bias_initializer='glorot_normal')(layer1)
+    layer3 = Dense(32, activation='tanh', kernel_initializer="glorot_normal",
+                   use_bias=True, bias_initializer='glorot_normal')(layer2)
+    layer4 = Dense(16, activation='tanh', kernel_initializer='glorot_normal',
+                   use_bias=True, bias_initializer='glorot_normal')(layer3)
+
+    # output layer
+    output = Dense(4, activation='softmax', kernel_initializer='glorot_normal',
+                   use_bias=True, bias_initializer='glorot_normal')(layer4)
+
+    models = Model(inputs=input_layer, outputs=output)
     return models
