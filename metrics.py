@@ -5,15 +5,15 @@ from keras import backend as K
 
 
 def dice_coef(y_true, y_pred):
-    ytrue_reshaped = keras.backend.flatten(y_true)
-    ypred_reshaped = keras.backend.flatten(y_pred)
+    # ytrue_reshaped = keras.backend.flatten(y_true)
+    # ypred_reshaped = keras.backend.flatten(y_pred)
 
     intersection = keras.backend.sum(
-        ytrue_reshaped*ypred_reshaped, axis=[1, 2, 3])
+        y_true*y_pred, axis=[1, 2, 3])
 
     E = keras.backend.epsilon()
-    dice = keras.backend.mean((2.*intersection+E)/(keras.backend.sum(ytrue_reshaped, axis=[1, 2, 3]) +
-                                                   keras.backend.sum(ypred_reshaped, axis=[1, 2, 3])+E), axis=0)
+    dice = keras.backend.mean((2.*intersection+E)/(keras.backend.sum(y_true, axis=[1, 2, 3]) +
+                                                   keras.backend.sum(y_pred, axis=[1, 2, 3])+E), axis=0)
     return dice
 
 

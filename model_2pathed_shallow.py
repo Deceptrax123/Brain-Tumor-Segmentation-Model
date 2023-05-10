@@ -86,13 +86,7 @@ def create_2pathed_shallow():
 
     # reconstruct 128X128X128X4
     recon = Conv3DTranspose(filters=4, kernel_initializer='he_normal', kernel_size=(
-        3, 3, 3), activation='relu', strides=1, padding='valid', use_bias=True, bias_initializer='he_normal')(dconv1_e_6)
+        3, 3, 3), activation='softmax', strides=1, padding='valid', use_bias=True, bias_initializer='he_normal')(dconv1_e_6)
 
-    # reshape
-    reshaped = Reshape((128*128*128, 4))(recon)
-
-    output = Dense(4, activation='softmax', kernel_initializer='glorot_normal',
-                   use_bias=True, bias_initializer='glorot_normal')(reshaped)
-
-    model = Model(inputs=input_layer, outputs=output)
+    model = Model(inputs=input_layer, outputs=recon)
     return model

@@ -21,10 +21,10 @@ def generate_image(paths):
 
         mask = np.load("./Data/Train/masks_reformatted/mask_" +
                        example_id+".npy")
-        #reshape mask
-        mask_reshaped=np.reshape(mask,(128*128*128,4))
+        # reshape mask
+        # mask_reshaped=np.reshape(mask,(128*128*128,4))
         # Normalization
         normalized_sample = (sample-np.mean(sample, axis=0)
                              )/np.std(sample, axis=0)
 
-        yield normalized_sample, mask_reshaped
+        yield normalized_sample, mask
