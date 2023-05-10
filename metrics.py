@@ -1,22 +1,28 @@
 import keras
 from keras.losses import categorical_crossentropy
+import numpy as np
+from keras import backend as K
 
 
-def dice_coef(y_true, y_pred, smooth=1e-4):
-    intersection = keras.backend.sum(y_true*y_pred, axis=[0, 1, 2, 3])
-    union = keras.backend.sum(
-        y_true, axis=[0, 1, 2, 3])+keras.backend.sum(y_pred, axis=[0, 1, 2, 3])
+def dice_coef(y_true, y_pred):
+    ytrue_reshaped = keras.backend.flatten(y_true)
+    ypred_reshaped = keras.backend.flatten(y_pred)
 
-    mean = keras.backend.mean((2.*intersection+smooth)/(union+smooth), axis=0)
-    return mean
+    intersection = keras.backend.sum(
+        ytrue_reshaped*ypred_reshaped, axis=[1, 2, 3])
+
+    E = keras.backend.epsilon()
+    dice = keras.backend.mean((2.*intersection+E)/(keras.backend.sum(ytrue_reshaped, axis=[1, 2, 3]) +
+                                                   keras.backend.sum(ypred_reshaped, axis=[1, 2, 3])+E), axis=0)
+    return dice
 
 
 def dice_loss(y_true, y_pred):
-    loss = 1-dice_coef(y_true, y_pred)
-    return loss
+    dice_loss = 1-dice_coef(y_true, y_pred)
+    return dice_loss
 
 
-def categorical_loss(y_true, y_pred):
+def overall_loss(y_true, y_pred):
     loss = (0.5*categorical_crossentropy(y_true, y_pred)) + \
         dice_loss(y_true, y_pred)
     return loss
