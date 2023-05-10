@@ -1,6 +1,6 @@
 import tensorflow as tf
 from keras.layers import Conv3D, Reshape, Conv3DTranspose, UpSampling3D, MaxPooling3D, Concatenate
-from keras.layers import Dropout, Input, BatchNormalization, Dense
+from keras.layers import Dropout, Input, BatchNormalization, Dense, Flatten
 from keras.models import Model
 import keras
 
@@ -107,6 +107,29 @@ def create_2pathed():
                                activation='relu', strides=1, use_bias=True, padding='valid', bias_initializer='he_normal')(conv_d_6)
 
     # deconvolve the 2pathed block
+    # first decoding block
+    conv_d_8 = Conv3DTranspose(filters=32, kernel_size=(3, 3, 3), kernel_initializer='he_normal',
+                               activation='relu', use_bias=True, bias_initializer='he_normal')(conv_d_7)
+    conv_d_9 = Conv3DTranspose(filters=32, kernel_size=(3, 3, 3), kernel_initializer='he_normal',
+                               activation='relu', use_bias=True, bias_initializer='he_normal')(conv_d_8)
+    conv_d_10 = Conv3DTranspose(filters=16, kernel_size=(3, 3, 3), kernel_initializer='he_normal',
+                                activation='relu', use_bias=True, bias_initializer='he_normal')(conv_d_9)
+    conv_d_11 = Conv3DTranspose(filters=16, kernel_size=(3, 3, 3), kernel_initializer='he_normal',
+                                activation='relu', use_bias=True, bias_initializer='he_normal')(conv_d_10)
 
-    models = Model(inputs=input_layer, outputs=conv_d_7)
+    up_d_2 = UpSampling3D(size=(2, 2, 2))(conv_d_11)
+
+    conv_d_12 = Conv3DTranspose(filters=8, kernel_size=(3, 3, 3), kernel_initializer='he_normal',
+                                activation='relu', use_bias=True, bias_initializer='he_normal')(up_d_2)
+    conv_d_13 = Conv3DTranspose(filters=8, kernel_size=(3, 3, 3), kernel_initializer='he_normal',
+                                activation='relu', use_bias=True, bias_initializer='he_normal')(conv_d_12)
+    conv_d_14 = Conv3DTranspose(filters=8, kernel_size=(3, 3, 3), kernel_initializer='he_normal',
+                                activation='relu', use_bias=True, bias_initializer='he_normal')(conv_d_13)
+    conv_d_15 = Conv3DTranspose(filters=4, kernel_size=(3, 3, 3), kernel_initializer='he_normal',
+                                activation='relu', use_bias=True, bias_initializer='he_normal')(conv_d_14)
+
+    # shape obtained,flatten and dense
+    flat = Flatten()(conv_d_15)
+
+    models = Model(inputs=input_layer, outputs=flat)
     return models
