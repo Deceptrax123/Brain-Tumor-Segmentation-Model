@@ -9,11 +9,11 @@ def dice_coef(y_true, y_pred):
     # ypred_reshaped = keras.backend.flatten(y_pred)
 
     intersection = keras.backend.sum(
-        y_true*y_pred, axis=[1, 2, 3])
+        y_true*y_pred, axis=[1, 2, 3, 4])
 
     E = keras.backend.epsilon()
-    dice = keras.backend.mean((2.*intersection+E)/(keras.backend.sum(y_true, axis=[1, 2, 3]) +
-                                                   keras.backend.sum(y_pred, axis=[1, 2, 3])+E), axis=0)
+    dice = keras.backend.mean((2.*intersection+E)/(keras.backend.sum(y_true, axis=[1, 2, 3, 4]) +
+                                                   keras.backend.sum(y_pred, axis=[1, 2, 3, 4])+E), axis=0)
     return dice
 
 
