@@ -7,7 +7,6 @@ import keras
 
 def create_2pathed_shallow():
     input_layer = Input((128, 128, 128, 3))
-
     # first encoding block
     # Convolution layers
     conv1_e_1 = Conv3D(filters=8, kernel_initializer='he_normal', kernel_size=(
