@@ -2,7 +2,7 @@ import tensorflow as tf
 from glob import glob
 from sklearn.model_selection import train_test_split
 from batch_generator import batch_generator
-from resnet_lstm import make_model
+from model import make_model
 from scheduler import scheduler
 import datetime
 import keras
