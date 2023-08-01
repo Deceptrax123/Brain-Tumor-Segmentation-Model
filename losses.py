@@ -22,4 +22,5 @@ class Complete_Dice_Loss(tf.keras.losses.Loss):
 
             dice_channel = 1-K.mean((2.*intersection+E)/(union+E))
             dice = dice+dice_channel
-        return dice
+        dice_logcosh = tf.math.log(tf.math.cosh(dice))
+        return dice_logcosh

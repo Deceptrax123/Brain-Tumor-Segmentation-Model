@@ -1,84 +1,131 @@
-import keras
-from keras.losses import categorical_crossentropy
-import numpy as np
-from keras import backend as K
 import tensorflow as tf
+from keras import backend as K
 
 
-def dice_coef(y_true, y_pred):
-    # ytrue_reshaped = keras.backend.flatten(y_true)
-    # ypred_reshaped = keras.backend.flatten(y_pred)
+class Complete_Dice_Coef(tf.keras.metrics.Metric):
+    def __init__(self, name='dice_coef_complete', **kwargs):
+        super(Complete_Dice_Coef, self).__init__(name=name, **kwargs)
+        self.coef = self.add_weight(name='complete', initializer='zeros')
 
-    intersection = keras.backend.sum(
-        y_true*y_pred, axis=[1, 2, 3, 4])
+    def update_state(self, y_true, y_pred):
+        E = K.epsilon()
+        dice = 0
+        for i in range(1, 4):
+            ytrue_channel, ypred_channel = y_true[:,
+                                                  :, :, :, i], y_pred[:, :, :, :, i]
 
-    E = keras.backend.epsilon()
-    dice = keras.backend.mean((2.*intersection+E)/(keras.backend.sum(y_true, axis=[1, 2, 3, 4]) +
-                                                   keras.backend.sum(y_pred, axis=[1, 2, 3, 4])+E), axis=0)
-    return dice
+            ytrue_f = K.flatten(ytrue_channel)
+            ypred_f = K.flatten(ypred_channel)
 
+            intersection = K.sum(ypred_f*ytrue_f, axis=1)
+            union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
 
-def dice_loss(y_true, y_pred):
-    dice_loss = 1-dice_coef(y_true, y_pred)
-    return dice_loss
+            dice_channel = K.mean((2.*intersection+E)/(union+E))
+            dice = dice+dice_channel
+        self.coef.assign_add(dice)
 
+    def result(self):
+        return self.coef
 
-def dice_coef_necrotic(y_true, y_pred):
-    ytrue_f = keras.backend.batch_flatten(y_true[:, :, :, :, 1])
-    ypred_f = keras.backend.batch_flatten(y_pred[:, :, :, :, 1])
-
-    intersection = keras.backend.sum(ytrue_f*ypred_f, axis=1)
-    union = keras.backend.sum(
-        ytrue_f, axis=1)+keras.backend.sum(keras.backend.square(ypred_f), axis=1)
-    E = keras.backend.epsilon()
-
-    dice = keras.backend.mean((2.*intersection+E)/(union+E))
-
-    return dice
+    def reset_states(self):
+        self.coef.assign(0.)
 
 
-def dice_coef_edema(y_true, y_pred):
-    ytrue_f = keras.backend.batch_flatten(y_true[:, :, :, :, 2])
-    ypred_f = keras.backend.batch_flatten(y_pred[:, :, :, :, 2])
+class Necrotic_Dice_Coef(tf.keras.metrics.Metric):
+    def __init__(self, name='dice_coef_necrotic', **kwargs):
+        super(Necrotic_Dice_Coef, self).__init__(name=name, **kwargs)
+        self.loss = self.add_weight(name='necrotic', initializer='zeros')
 
-    intersection = keras.backend.sum(ytrue_f*ypred_f, axis=1)
-    union = keras.backend.sum(
-        ytrue_f, axis=1)+keras.backend.sum(keras.backend.square(ypred_f), axis=1)
-    E = keras.backend.epsilon()
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        ytrue_f = K.flatten(y_true[:, :, :, :, 1])
+        ypred_f = K.flatten(y_pred[:, :, :, :, 1])
 
-    dice = keras.backend.mean((2.*intersection+E)/(union+E))
+        intersection = K.sum(ytrue_f*ypred_f, axis=1)
+        union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
 
-    return dice
+        E = K.epsilon()
 
+        dice = K.mean(2.*(intersection+E)/(union+E))
 
-def dice_coef_enhancing(y_true, y_pred):
-    ytrue_f = keras.backend.batch_flatten(y_true[:, :, :, :, 3])
-    ypred_f = keras.backend.batch_flatten(y_pred[:, :, :, :, 3])
+        self.loss.assign_add(dice)
 
-    intersection = keras.backend.sum(ytrue_f*ypred_f, axis=1)
-    union = keras.backend.sum(
-        ytrue_f, axis=1)+keras.backend.sum(keras.backend.square(ypred_f), axis=1)
-    E = keras.backend.epsilon()
+    def result(self):
+        return self.loss
 
-    dice = keras.backend.mean((2.*intersection+E)/(union+E))
-
-    return dice
+    def reset_state(self):
+        self.loss.assign(0.)
 
 
-def dice_coef_complete(y_true, y_pred):
-    dice = 0
-    for i in range(1, 4):
-        dice = dice+dice_coef(y_true[:, :, :, :, i], y_pred[:, :, :, :, i])
-    return (dice/3)
+class Enhancing_Dice_Coef(tf.keras.metrics.Metric):
+    def __init__(self, name='dice_coef_enhancing', **kwargs):
+        super(Enhancing_Dice_Coef, self).__init__(name=name, **kwargs)
+        self.loss = self.add_weight(name='enhancing', initializer='zeros')
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        ytrue_f = K.flatten(y_true[:, :, :, :, 3])
+        ypred_f = K.flatten(y_pred[:, :, :, :, 3])
+
+        intersection = K.sum(ytrue_f*ypred_f, axis=1)
+        union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
+
+        E = K.epsilon()
+
+        dice = K.mean(2.*(intersection+E)/(union+E))
+
+        self.loss.assign_add(dice)
+
+    def result(self):
+        return self.loss
+
+    def reset_state(self):
+        self.loss.assign(0.)
 
 
-def dice_cosh_loss(ytrue, ypred):
-    loss = tf.math.log1p(tf.math.cosh(1-(3*dice_coef_complete(ytrue, ypred))))
+class Edema_Dice_Coef(tf.keras.metrics.Metric):
+    def __init__(self, name='dice_coef_edema', **kwargs):
+        super(Edema_Dice_Coef, self).__init__(name=name, **kwargs)
+        self.loss = self.add_weight(name='edema', initializer='zeros')
 
-    return loss
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        ytrue_f = K.flatten(y_true[:, :, :, :, 2])
+        ypred_f = K.flatten(y_pred[:, :, :, :, 2])
+
+        intersection = K.sum(ytrue_f*ypred_f, axis=1)
+        union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
+
+        E = K.epsilon()
+
+        dice = K.mean(2.*(intersection+E)/(union+E))
+
+        self.loss.assign_add(dice)
+
+    def result(self):
+        return self.loss
+
+    def reset_state(self):
+        self.loss.assign(0.)
 
 
-def overall_loss(y_true, y_pred):
-    loss = (0.5*categorical_crossentropy(y_true, y_pred)) + \
-        dice_loss(y_true, y_pred)
-    return loss
+class Dice_coef(tf.keras.metrics.Metric):
+    def __init__(self, name='dice_coef', **kwargs):
+        super(Dice_coef, self).__init__(name=name, **kwargs)
+        self.loss = self.add_weight(name='dc', initializer='zeros')
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        ytrue_f = K.flatten(y_true)
+        ypred_f = K.flatten(y_pred)
+
+        intersection = K.sum(ytrue_f*ypred_f, axis=1)
+        union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
+
+        E = K.epsilon()
+
+        dice = K.mean(2.*(intersection+E)/(union+E))
+
+        self.loss.assign_add(dice)
+
+    def result(self):
+        return self.loss
+
+    def reset_states(self):
+        self.loss.assign_add(0.)
