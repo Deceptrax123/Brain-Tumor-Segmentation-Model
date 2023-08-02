@@ -16,8 +16,8 @@ class Complete_Dice_Loss(tf.keras.losses.Loss):
             ytrue_channel, ypred_channel = y_true[:,
                                                   :, :, :, i], y_pred[:, :, :, :, i]
 
-            ytrue_f = K.flatten(ytrue_channel)
-            ypred_f = K.flatten(ypred_channel)
+            ytrue_f = K.batch_flatten(ytrue_channel)
+            ypred_f = K.batch_flatten(ypred_channel)
 
             intersection = K.sum(ypred_f*ytrue_f, axis=1)
             union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)

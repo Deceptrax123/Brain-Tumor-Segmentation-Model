@@ -17,8 +17,8 @@ class Complete_Dice_Coef(tf.keras.metrics.Metric):
             ytrue_channel, ypred_channel = y_true[:,
                                                   :, :, :, i], y_pred[:, :, :, :, i]
 
-            ytrue_f = K.flatten(ytrue_channel)
-            ypred_f = K.flatten(ypred_channel)
+            ytrue_f = K.batch_flatten(ytrue_channel)
+            ypred_f = K.batch_flatten(ypred_channel)
 
             intersection = K.sum(ypred_f*ytrue_f, axis=1)
             union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
@@ -43,8 +43,8 @@ class Necrotic_Dice_Coef(tf.keras.metrics.Metric):
         # convert probability map to one hot labels
         y_pred = tf.one_hot(tf.argmax(y_pred, axis=4), depth=4)
 
-        ytrue_f = K.flatten(y_true[:, :, :, :, 1])
-        ypred_f = K.flatten(y_pred[:, :, :, :, 1])
+        ytrue_f = K.batch_flatten(y_true[:, :, :, :, 1])
+        ypred_f = K.batch_flatten(y_pred[:, :, :, :, 1])
 
         intersection = K.sum(ytrue_f*ypred_f, axis=1)
         union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
@@ -71,8 +71,8 @@ class Enhancing_Dice_Coef(tf.keras.metrics.Metric):
         # convert probability map to one hot labels
         y_pred = tf.one_hot(tf.argmax(y_pred, axis=4), depth=4)
 
-        ytrue_f = K.flatten(y_true[:, :, :, :, 3])
-        ypred_f = K.flatten(y_pred[:, :, :, :, 3])
+        ytrue_f = K.batch_flatten(y_true[:, :, :, :, 3])
+        ypred_f = K.batch_flatten(y_pred[:, :, :, :, 3])
 
         intersection = K.sum(ytrue_f*ypred_f, axis=1)
         union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
@@ -99,8 +99,8 @@ class Edema_Dice_Coef(tf.keras.metrics.Metric):
         # convert probability map to one hot labels
         y_pred = tf.one_hot(tf.argmax(y_pred, axis=4), depth=4)
 
-        ytrue_f = K.flatten(y_true[:, :, :, :, 2])
-        ypred_f = K.flatten(y_pred[:, :, :, :, 2])
+        ytrue_f = K.batch_flatten(y_true[:, :, :, :, 2])
+        ypred_f = K.batch_flatten(y_pred[:, :, :, :, 2])
 
         intersection = K.sum(ytrue_f*ypred_f, axis=1)
         union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
@@ -127,8 +127,8 @@ class Dice_coef(tf.keras.metrics.Metric):
         # convert probability map to one hot labels
         y_pred = tf.one_hot(tf.argmax(y_pred, axis=4), depth=4)
 
-        ytrue_f = K.flatten(y_true)
-        ypred_f = K.flatten(y_pred)
+        ytrue_f = K.batch_flatten(y_true)
+        ypred_f = K.batch_flatten(y_pred)
 
         intersection = K.sum(ytrue_f*ypred_f, axis=1)
         union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)

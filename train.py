@@ -97,12 +97,12 @@ def training_loop(traingen, testgen, callbacks, train_steps, test_steps):
         tenecrotic.append(test_necrotic.result())
 
         # reset states after each epoch
-        train_complete.reset_state()
+        train_complete.reset_states()
         train_enhancing.reset_state()
         train_edema.reset_state()
         train_necrotic.reset_state()
 
-        test_complete.reset_state()
+        test_complete.reset_states()
         test_enhancing.reset_state()
         test_edema.reset_state()
         test_necrotic.reset_state()
@@ -127,17 +127,17 @@ model = make_model()
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
 # Call metric classes
-train_dice_complete = Complete_Dice_Coef()
-test_dice_complete = Complete_Dice_Coef()
+train_complete = Complete_Dice_Coef()
+test_complete = Complete_Dice_Coef()
 
-train_dice_necrotic = Necrotic_Dice_Coef()
-test_dice_necrotic = Necrotic_Dice_Coef()
+train_necrotic = Necrotic_Dice_Coef()
+test_necrotic = Necrotic_Dice_Coef()
 
-train_dice_enhancing = Enhancing_Dice_Coef()
-test_dice_enhancing = Enhancing_Dice_Coef()
+train_enhancing = Enhancing_Dice_Coef()
+test_enhancing = Enhancing_Dice_Coef()
 
-train_dice_edema = Edema_Dice_Coef()
-test_dice_edema = Edema_Dice_Coef()
+train_edema = Edema_Dice_Coef()
+test_edema = Edema_Dice_Coef()
 
 log_dir = "/kaggle/working/logs/fit/" + \
     datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
