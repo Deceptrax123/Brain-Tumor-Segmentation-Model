@@ -30,7 +30,7 @@ class Complete_Dice_Coef(tf.keras.metrics.Metric):
     def result(self):
         return self.coef
 
-    def reset_states(self):
+    def reset_state(self):
         self.coef.assign(0.)
 
 
@@ -142,5 +142,5 @@ class Dice_coef(tf.keras.metrics.Metric):
     def result(self):
         return self.loss
 
-    def reset_states(self):
+    def reset_state(self):
         self.loss.assign_add(0.)

@@ -9,7 +9,6 @@ from losses import Complete_Dice_Loss
 from metrics import Complete_Dice_Coef, Enhancing_Dice_Coef, Necrotic_Dice_Coef, Edema_Dice_Coef
 
 
-@tf.function
 def steps(m, batchsize):
     return (m+batchsize-1)//batchsize
 
@@ -18,7 +17,7 @@ def steps(m, batchsize):
 def train(images, masks):
     with tf.GradientTape() as tape:
         predictions = model(images, training=True)
-        loss = Complete_Dice_loss(masks, predictions)
+        loss = Complete_Dice_loss().call(masks, predictions)
     gradients = tape.gradient(loss, model.trainable_weights)
     optimizer.apply_gradients(zip(gradients, model.trainable_weights))
 
@@ -40,7 +39,6 @@ def test(images, masks):
     test_necrotic.update_state(masks, predictions)
 
 
-@tf.function
 def training_loop(traingen, testgen, callbacks, train_steps, test_steps):
     num_epochs = 50
     train_loss = 0
@@ -67,42 +65,44 @@ def training_loop(traingen, testgen, callbacks, train_steps, test_steps):
             losses.append(train_loss)
 
             if (step % 10 == 0):
-                print("Loss so far per batch %.4f" % (float(train_loss)))
+                print("Loss so far per batch - %.4f" % (float(train_loss)))
 
-        train_loss = tf.keras.metrics.Mean(losses)
-        print("Training Loss after epoch %d - %.4f" % (epoch, train_loss))
-        train_losses.append(train_loss)
+        m.update_state(losses)
+        print("Training Loss after epoch % d - %.4f" % (float(m.result())))
 
-        for step in test_steps:
+        train_losses.append(m.result())
+        m.reset_state()
+
+        for step in range(test_steps):
             sample, masks = next(testgen)
 
             test(sample, masks)
 
         # metrics after training
         print("Training Metrics after epoch %d- Dice coef complete- %.4f,Enhancing- %0.4f, Necrotic- %0.4f, Edema- %0.4f" %
-              (epoch, train_complete.result(), train_enhancing.result(), train_necrotic.result(), train_edema.result()))
+              (epoch, train_complete.result()/train_steps, train_enhancing.result()/train_steps, train_necrotic.result()/train_steps, train_edema.result()/train_steps))
 
         # metrics after testing
         print("Test metrics after epoch %d- Dice Coef complete- %0.4f, Enhancing- %0.4f, Necrotic- %0.4f, Edema- %0.4f" %
-              (epoch, test_complete.result(), test_enhancing.result(), test_necrotic.result(), test_edema.result()))
+              (epoch, test_complete.result()/test_steps, test_enhancing.result()/test_steps, test_necrotic.result()/test_steps, test_edema.result()/test_steps))
 
         # Append to list to visualize later
-        tcomplete.append(train_complete.result())
-        tenhancing.append(train_enhancing.result())
-        tedema.append(train_edema.result())
-        tnecrotic.append(train_necrotic.result())
-        tecomplete.append(test_complete.result())
-        teedema.append(test_edema.result())
-        teenhancing.append(test_enhancing.result())
-        tenecrotic.append(test_necrotic.result())
+        tcomplete.append(train_complete.result()/train_steps)
+        tenhancing.append(train_enhancing.result()/train_steps)
+        tedema.append(train_edema.result()/train_steps)
+        tnecrotic.append(train_necrotic.result()/train_steps)
+        tecomplete.append(test_complete.result()/test_steps)
+        teedema.append(test_edema.result()/test_steps)
+        teenhancing.append(test_enhancing.result()/test_steps)
+        tenecrotic.append(test_necrotic.result()/test_steps)
 
         # reset states after each epoch
-        train_complete.reset_states()
+        train_complete.reset_state()
         train_enhancing.reset_state()
         train_edema.reset_state()
         train_necrotic.reset_state()
 
-        test_complete.reset_states()
+        test_complete.reset_state()
         test_enhancing.reset_state()
         test_edema.reset_state()
         test_necrotic.reset_state()
@@ -138,6 +138,8 @@ test_enhancing = Enhancing_Dice_Coef()
 
 train_edema = Edema_Dice_Coef()
 test_edema = Edema_Dice_Coef()
+
+mean = tf.keras.metrics.Mean()
 
 log_dir = "/kaggle/working/logs/fit/" + \
     datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
