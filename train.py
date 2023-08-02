@@ -60,7 +60,7 @@ def training_loop(traingen, testgen, callbacks, train_steps, test_steps):
     teenhancing = []
     for epoch in range(num_epochs):
         # get learning rate as per scheduler function
-        lr = scheduler(epoch+1)
+        lr = scheduler(epoch+1, optimizer.learning_rate)
         optimizer.learning_rate = lr
 
         traingen = batch_generator(train_sample_paths, batch_size)
