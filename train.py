@@ -9,14 +9,16 @@ from losses import Complete_Dice_Loss
 from metrics import Complete_Dice_Coef, Enhancing_Dice_Coef, Necrotic_Dice_Coef, Edema_Dice_Coef
 
 
+@tf.function
 def steps(m, batchsize):
     return (m+batchsize-1)//batchsize
 
 
+@tf.function
 def train(images, masks):
     with tf.GradientTape() as tape:
         predictions = model(images, training=True)
-        loss = dice_cosh_loss(masks, predictions)
+        loss = Complete_Dice_loss(masks, predictions)
     gradients = tape.gradient(loss, model.trainable_weights)
     optimizer.apply_gradients(zip(gradients, model.trainable_weights))
 
@@ -28,6 +30,7 @@ def train(images, masks):
     return loss
 
 
+@tf.function
 def test(images, masks):
     predictions = model(images, training=False)
 
@@ -37,6 +40,7 @@ def test(images, masks):
     test_necrotic.update_state(masks, predictions)
 
 
+@tf.function
 def training_loop(traingen, testgen, callbacks, train_steps, test_steps):
     num_epochs = 50
     train_loss = 0

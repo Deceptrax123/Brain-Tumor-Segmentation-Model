@@ -11,6 +11,8 @@ class Complete_Dice_Loss(tf.keras.losses.Loss):
         E = K.epsilon()
         dice = 0
         for i in range(1, 4):
+            # ypred is a probability map->Convert to hard labels
+            ypred = tf.one_hot(tf.argmax(ypred, axis=4), depth=4)
             ytrue_channel, ypred_channel = y_true[:,
                                                   :, :, :, i], y_pred[:, :, :, :, i]
 

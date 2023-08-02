@@ -8,6 +8,9 @@ class Complete_Dice_Coef(tf.keras.metrics.Metric):
         self.coef = self.add_weight(name='complete', initializer='zeros')
 
     def update_state(self, y_true, y_pred):
+        # convert probability map to one hot labels
+        y_pred = tf.one_hot(tf.argmax(y_pred, axis=4), depth=4)
+
         E = K.epsilon()
         dice = 0
         for i in range(1, 4):
@@ -37,6 +40,9 @@ class Necrotic_Dice_Coef(tf.keras.metrics.Metric):
         self.loss = self.add_weight(name='necrotic', initializer='zeros')
 
     def update_state(self, y_true, y_pred, sample_weight=None):
+        # convert probability map to one hot labels
+        y_pred = tf.one_hot(tf.argmax(y_pred, axis=4), depth=4)
+
         ytrue_f = K.flatten(y_true[:, :, :, :, 1])
         ypred_f = K.flatten(y_pred[:, :, :, :, 1])
 
@@ -62,6 +68,9 @@ class Enhancing_Dice_Coef(tf.keras.metrics.Metric):
         self.loss = self.add_weight(name='enhancing', initializer='zeros')
 
     def update_state(self, y_true, y_pred, sample_weight=None):
+        # convert probability map to one hot labels
+        y_pred = tf.one_hot(tf.argmax(y_pred, axis=4), depth=4)
+
         ytrue_f = K.flatten(y_true[:, :, :, :, 3])
         ypred_f = K.flatten(y_pred[:, :, :, :, 3])
 
@@ -87,6 +96,9 @@ class Edema_Dice_Coef(tf.keras.metrics.Metric):
         self.loss = self.add_weight(name='edema', initializer='zeros')
 
     def update_state(self, y_true, y_pred, sample_weight=None):
+        # convert probability map to one hot labels
+        y_pred = tf.one_hot(tf.argmax(y_pred, axis=4), depth=4)
+
         ytrue_f = K.flatten(y_true[:, :, :, :, 2])
         ypred_f = K.flatten(y_pred[:, :, :, :, 2])
 
@@ -112,6 +124,9 @@ class Dice_coef(tf.keras.metrics.Metric):
         self.loss = self.add_weight(name='dc', initializer='zeros')
 
     def update_state(self, y_true, y_pred, sample_weight=None):
+        # convert probability map to one hot labels
+        y_pred = tf.one_hot(tf.argmax(y_pred, axis=4), depth=4)
+
         ytrue_f = K.flatten(y_true)
         ypred_f = K.flatten(y_pred)
 
