@@ -1,6 +1,10 @@
 #virtual environments
 .venv/
 .venv2/
+
+#vscode settings
+.vscode/
+
 #Data Folder
 Data/
 

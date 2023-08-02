@@ -5,8 +5,8 @@ from batch_generator import batch_generator
 from model import make_model
 from scheduler import scheduler
 import datetime
-import keras
-from metrics import dice_cosh_loss, dice_coef_complete, dice_coef_enhancing, dice_coef_necrotic, dice_coef
+from losses import Complete_Dice_Loss
+from metrics import Complete_Dice_Coef, Enhancing_Dice_Coef, Necrotic_Dice_Coef, Edema_Dice_Coef
 
 
 def steps(m, batchsize):
@@ -20,11 +20,21 @@ def train(images, masks):
     gradients = tape.gradient(loss, model.trainable_weights)
     optimizer.apply_gradients(zip(gradients, model.trainable_weights))
 
+    train_complete.update_state(masks, predictions)
+    train_edema.update_state(masks, predictions)
+    train_enhancing.update_state(masks, predictions)
+    train_necrotic.update_state(masks, predictions)
+
     return loss
 
 
 def test(images, masks):
     predictions = model(images, training=False)
+
+    test_complete.update_state(masks, predictions)
+    test_edema.update_state(masks, predictions)
+    test_enhancing.update_state(masks, predictions)
+    test_necrotic.update_state(masks, predictions)
 
 
 def training_loop(traingen, testgen, callbacks, train_steps, test_steps):
@@ -32,6 +42,19 @@ def training_loop(traingen, testgen, callbacks, train_steps, test_steps):
     train_loss = 0
 
     losses = []
+    train_losses = []
+    # train metrics
+    tcomplete = []
+    tedema = []
+    tnecrotic = []
+    tenhancing = []
+
+    # test metrics
+    tecomplete = []
+    teedema = []
+    tenecrotic = []
+    teenhancing = []
+
     for epoch in range(num_epochs):
         for step in range(train_steps):
             sample, masks = next(traingen)
@@ -44,11 +67,43 @@ def training_loop(traingen, testgen, callbacks, train_steps, test_steps):
 
         train_loss = tf.keras.metrics.Mean(losses)
         print("Training Loss after epoch %d - %.4f" % (epoch, train_loss))
+        train_losses.append(train_loss)
 
         for step in test_steps:
             sample, masks = next(testgen)
 
             test(sample, masks)
+
+        # metrics after training
+        print("Training Metrics after epoch %d- Dice coef complete- %.4f,Enhancing- %0.4f, Necrotic- %0.4f, Edema- %0.4f" %
+              (epoch, train_complete.result(), train_enhancing.result(), train_necrotic.result(), train_edema.result()))
+
+        # metrics after testing
+        print("Test metrics after epoch %d- Dice Coef complete- %0.4f, Enhancing- %0.4f, Necrotic- %0.4f, Edema- %0.4f" %
+              (epoch, test_complete.result(), test_enhancing.result(), test_necrotic.result(), test_edema.result()))
+
+        # Append to list to visualize later
+        tcomplete.append(train_complete.result())
+        tenhancing.append(train_enhancing.result())
+        tedema.append(train_edema.result())
+        tnecrotic.append(train_necrotic.result())
+        tecomplete.append(test_complete.result())
+        teedema.append(test_edema.result())
+        teenhancing.append(test_enhancing.result())
+        tenecrotic.append(test_necrotic.result())
+
+        # reset states after each epoch
+        train_complete.reset_state()
+        train_enhancing.reset_state()
+        train_edema.reset_state()
+        train_necrotic.reset_state()
+
+        test_complete.reset_state()
+        test_enhancing.reset_state()
+        test_edema.reset_state()
+        test_necrotic.reset_state()
+
+    return train_losses, tcomplete, tedema, tenhancing, tecomplete, teedema, teenhancing, tenecrotic
 
 
 batch_size = 2
@@ -67,6 +122,18 @@ test_steps = steps(len(test_sample_paths), batch_size)
 model = make_model()
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
+# Call metric classes
+train_dice_complete = Complete_Dice_Coef()
+test_dice_complete = Complete_Dice_Coef()
+
+train_dice_necrotic = Necrotic_Dice_Coef()
+test_dice_necrotic = Necrotic_Dice_Coef()
+
+train_dice_enhancing = Enhancing_Dice_Coef()
+test_dice_enhancing = Enhancing_Dice_Coef()
+
+train_dice_edema = Edema_Dice_Coef()
+test_dice_edema = Edema_Dice_Coef()
 
 log_dir = "/kaggle/working/logs/fit/" + \
     datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
