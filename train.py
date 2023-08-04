@@ -164,3 +164,6 @@ test_edema = Edema_Dice_Coef()
 
 mean = tf.keras.metrics.Mean()
 test_mean = tf.keras.metrics.Mean()
+
+
+print(model.summary())

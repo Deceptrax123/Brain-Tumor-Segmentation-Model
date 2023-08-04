@@ -8,7 +8,7 @@ class Complete_Dice_Loss(tf.keras.losses.Loss):
         super().__init__()
 
     def call(self, y_true, y_pred):
-        E = K.epsilon()
+        E = 1
         dice = 0
         for i in range(1, 4):
             # ypred is a probability map->Convert to hard labels

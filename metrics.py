@@ -11,7 +11,7 @@ class Complete_Dice_Coef(tf.keras.metrics.Metric):
         # convert probability map to one hot labels
         y_pred = tf.one_hot(tf.argmax(y_pred, axis=4), depth=4)
 
-        E = K.epsilon()
+        E = 1
         dice = 0
         for i in range(1, 4):
             ytrue_channel, ypred_channel = y_true[:,
@@ -49,7 +49,7 @@ class Necrotic_Dice_Coef(tf.keras.metrics.Metric):
         intersection = K.sum(ytrue_f*ypred_f, axis=1)
         union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
 
-        E = K.epsilon()
+        E = 1
 
         dice = K.mean(2.*(intersection+E)/(union+E))
 
@@ -77,7 +77,7 @@ class Enhancing_Dice_Coef(tf.keras.metrics.Metric):
         intersection = K.sum(ytrue_f*ypred_f, axis=1)
         union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
 
-        E = K.epsilon()
+        E = 1
 
         dice = K.mean(2.*(intersection+E)/(union+E))
 
@@ -105,7 +105,7 @@ class Edema_Dice_Coef(tf.keras.metrics.Metric):
         intersection = K.sum(ytrue_f*ypred_f, axis=1)
         union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
 
-        E = K.epsilon()
+        E = 1
 
         dice = K.mean(2.*(intersection+E)/(union+E))
 
@@ -133,7 +133,7 @@ class Dice_coef(tf.keras.metrics.Metric):
         intersection = K.sum(ytrue_f*ypred_f, axis=1)
         union = K.sum(ytrue_f, axis=1)+K.sum(ypred_f, axis=1)
 
-        E = K.epsilon()
+        E = 1
 
         dice = K.mean(2.*(intersection+E)/(union+E))
 
