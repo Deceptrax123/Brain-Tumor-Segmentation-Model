@@ -15,14 +15,18 @@ class ConvBlockEnc(tf.keras.layers.Layer):
 
     def call(self, input, training=False):
         x = self.conv(input)
-        x1 = self.bn(x)
-        x2 = tf.nn.relu(x1)
+        x = self.bn(x)
+        x = tf.nn.relu(x)
 
-        x3 = self.conv(x2)
-        x4 = self.bn(x3)
-        x5 = tf.nn.relu(x4)
+        x = self.conv(x)
+        x = self.bn(x)
+        x = tf.nn.relu(x)
 
-        return x5
+        x = self.conv(x)
+        x = self.bn(x)
+        x = tf.nn.relu(x)
+
+        return x
 
 
 class ConvBlockDec(tf.keras.layers.Layer):
@@ -34,6 +38,10 @@ class ConvBlockDec(tf.keras.layers.Layer):
 
     def call(self, input, training=False):
         x = self.deconv(input)
+        x = self.bn(x)
+        x = tf.nn.relu(x)
+
+        x = self.deconv(x)
         x = self.bn(x)
         x = tf.nn.relu(x)
 
