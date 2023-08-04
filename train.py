@@ -17,7 +17,7 @@ def steps(m, batchsize):
 def train(images, masks):
     with tf.GradientTape() as tape:
         predictions = model(images, training=True)
-        loss = Complete_Dice_loss().call(masks, predictions)
+        loss = Complete_Dice_Loss().call(masks, predictions)
     gradients = tape.gradient(loss, model.trainable_weights)
     optimizer.apply_gradients(zip(gradients, model.trainable_weights))
 
@@ -32,7 +32,7 @@ def train(images, masks):
 @tf.function
 def test(images, masks):
     predictions = model(images, training=False)
-    test_loss = Complete_Dice_loss().call(masks, predictions)
+    test_loss = Complete_Dice_Loss().call(masks, predictions)
 
     test_complete.update_state(masks, predictions)
     test_edema.update_state(masks, predictions)
@@ -162,7 +162,7 @@ test_enhancing = Enhancing_Dice_Coef()
 train_edema = Edema_Dice_Coef()
 test_edema = Edema_Dice_Coef()
 
-mean = tf.keras.metrics.Mean()
+m = tf.keras.metrics.Mean()
 test_mean = tf.keras.metrics.Mean()
 
 
