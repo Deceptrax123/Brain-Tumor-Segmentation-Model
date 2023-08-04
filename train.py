@@ -2,11 +2,12 @@ import tensorflow as tf
 from glob import glob
 from sklearn.model_selection import train_test_split
 from batch_generator import batch_generator
-from model import make_model
+from tried_models.model import make_model
 from scheduler import scheduler
 import datetime
 from losses import Complete_Dice_Loss
 from metrics import Complete_Dice_Coef, Enhancing_Dice_Coef, Necrotic_Dice_Coef, Edema_Dice_Coef
+from models import DualPathCNNLstm
 
 
 def steps(m, batchsize):
@@ -146,7 +147,9 @@ train_sample_paths, test_sample_paths = train_test_split(
 train_steps = steps(len(train_sample_paths), batch_size)
 test_steps = steps(len(test_sample_paths), batch_size)
 
-model = make_model()
+# model = make_model()
+model = DualPathCNNLstm()
+
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
 # Call metric classes
@@ -165,5 +168,4 @@ test_edema = Edema_Dice_Coef()
 m = tf.keras.metrics.Mean()
 test_mean = tf.keras.metrics.Mean()
 
-
-print(model.summary())
+model.summary()

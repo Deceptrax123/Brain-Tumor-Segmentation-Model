@@ -70,24 +70,30 @@ class DualPathCNNLstm(tf.keras.Model):
         # embeded lstm
         xlstm = self.lstm_down(x71)
 
-        # decoding step
+        # decoding step and bring in the skip connections
         xlstm_up = self.upsample(xlstm)
 
+        x62 = self.concatenate([x61, xlstm_up])
         x62 = self.dconv_1(xlstm_up)
         x62_up = self.upsample(x62)
 
+        x52 = self.concatenate([x62_up, x51])
         x52 = self.dconv_2(x62_up)
         x52_up = self.upsample(x52)
 
+        x42 = self.concatenate([x52_up, x41])
         x42 = self.dconv_3(x52_up)
         x42_up = self.upsample(x42)
 
+        x32 = self.concatenate([x42_up, x31])
         x32 = self.dconv_4(x42_up)
         x32_up = self.upsample(x32)
 
+        x22 = self.concatenate([x32_up, x21])
         x22 = self.dconv_5(x32_up)
         x22_up = self.upsample(x22)
 
+        x12 = self.concatenate([x22_up, x11])
         x12 = self.dconv_6(x22_up)
 
         # decoding lstm
