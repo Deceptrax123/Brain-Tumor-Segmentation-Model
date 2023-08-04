@@ -44,7 +44,7 @@ class ConvBlockDec(tf.keras.layers.Layer):
         return x
 
 
-class Lstm(tf.keras.layers.layer):
+class Lstm(tf.keras.layers.Layer):
     def __init__(self, kernel_size, filters, padding='same'):
         super(Lstm, self).__init__()
         self.lstm = ConvLSTM2D(filters=filters, kernel_size=kernel_size, padding=padding, activation='tanh',
