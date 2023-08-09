@@ -5,7 +5,7 @@ from batch_generator import batch_generator
 from tried_models.model import make_model
 from scheduler import scheduler
 import datetime
-from losses import Complete_Dice_Loss
+from losses import Complete_Dice_Loss,CrossEntropyDiceLoss
 from metrics import Complete_Dice_Coef, Enhancing_Dice_Coef, Necrotic_Dice_Coef, Edema_Dice_Coef
 from models import DualPathCNNLstm
 
@@ -18,7 +18,7 @@ def steps(m, batchsize):
 def train(images, masks):
     with tf.GradientTape() as tape:
         predictions = model(images, training=True)
-        loss = Complete_Dice_Loss().call(masks, predictions)
+        loss = CrossEntropyDiceLoss.call(masks, predictions)
     gradients = tape.gradient(loss, model.trainable_weights)
     optimizer.apply_gradients(zip(gradients, model.trainable_weights))
 
@@ -33,7 +33,7 @@ def train(images, masks):
 @tf.function
 def test(images, masks):
     predictions = model(images, training=False)
-    test_loss = Complete_Dice_Loss().call(masks, predictions)
+    test_loss = CrossEntropyDiceLoss().call(masks, predictions)
 
     test_complete.update_state(masks, predictions)
     test_edema.update_state(masks, predictions)

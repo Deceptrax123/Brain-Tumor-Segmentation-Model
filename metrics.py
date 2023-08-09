@@ -51,7 +51,7 @@ class Necrotic_Dice_Coef(tf.keras.metrics.Metric):
 
         E = 1
 
-        dice = K.mean(2.*(intersection+E)/(union+E))
+        dice = K.mean((2.*intersection+E)/(union+E))
 
         self.loss.assign_add(dice)
 
@@ -79,7 +79,7 @@ class Enhancing_Dice_Coef(tf.keras.metrics.Metric):
 
         E = 1
 
-        dice = K.mean(2.*(intersection+E)/(union+E))
+        dice = K.mean((2.*intersection+E)/(union+E))
 
         self.loss.assign_add(dice)
 
@@ -107,7 +107,7 @@ class Edema_Dice_Coef(tf.keras.metrics.Metric):
 
         E = 1
 
-        dice = K.mean(2.*(intersection+E)/(union+E))
+        dice = K.mean((2.*intersection+E)/(union+E))
 
         self.loss.assign_add(dice)
 
