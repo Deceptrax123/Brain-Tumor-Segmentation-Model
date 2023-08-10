@@ -1,8 +1,9 @@
 from keras.layers import Conv3D, MaxPool3D, Flatten, Dense, Reshape, AveragePooling3D, Conv3DTranspose, UpSampling3D, Activation
-from keras.layers import Input, Dropout, MaxPooling3D, BatchNormalization, Add, Concatenate, ConvLSTM2D, Bidirectional, Attention
+from keras.layers import Input, Dropout, MaxPooling3D, BatchNormalization, Add, ConvLSTM2D, Bidirectional, Attention
 import tensorflow as tf
 from layers import ConvBlockEnc, ConvBlockDec, Lstm, Final
 from keras.models import Model
+from keras.utils import plot_model
 
 
 class DualPathCNNLstm(tf.keras.Model):
@@ -21,6 +22,7 @@ class DualPathCNNLstm(tf.keras.Model):
 
         self.maxpool = MaxPooling3D(pool_size=(2, 2, 2))
 
+        self.dconv_0 = ConvBlockDec(kernel_size=(3, 3, 3), filters=256)
         self.dconv_1 = ConvBlockDec(kernel_size=(3, 3, 3), filters=128)
         self.dconv_2 = ConvBlockDec(kernel_size=(3, 3, 3), filters=64)
         self.dconv_3 = ConvBlockDec(kernel_size=(3, 3, 3), filters=32)
@@ -35,7 +37,6 @@ class DualPathCNNLstm(tf.keras.Model):
         self.lstm_down = Lstm(kernel_size=(3, 3), filters=256)
 
         self.add = Add()
-        self.concatenate = Concatenate()
 
         self.output_layer = Final(kernel_size=(3, 3, 3), filters=4)
 
@@ -71,30 +72,31 @@ class DualPathCNNLstm(tf.keras.Model):
         xlstm = self.lstm_down(x71)
 
         # decoding step and bring in the skip connections
+        xlstm = self.dconv_0(xlstm)
         xlstm_up = self.upsample(xlstm)
 
-        x62 = self.concatenate([x61, xlstm_up])
         x62 = self.dconv_1(xlstm_up)
+        x62 = self.add([x62, x61])
         x62_up = self.upsample(x62)
 
-        x52 = self.concatenate([x62_up, x51])
         x52 = self.dconv_2(x62_up)
+        x52 = self.add([x51, x52])
         x52_up = self.upsample(x52)
 
-        x42 = self.concatenate([x52_up, x41])
         x42 = self.dconv_3(x52_up)
+        x42 = self.add([x41, x42])
         x42_up = self.upsample(x42)
 
-        x32 = self.concatenate([x42_up, x31])
         x32 = self.dconv_4(x42_up)
+        x32 = self.add([x31, x32])
         x32_up = self.upsample(x32)
 
-        x22 = self.concatenate([x32_up, x21])
         x22 = self.dconv_5(x32_up)
+        x22 = self.add([x22, x21])
         x22_up = self.upsample(x22)
 
-        x12 = self.concatenate([x22_up, x11])
         x12 = self.dconv_6(x22_up)
+        x12 = self.add([x12, x11])
 
         # decoding lstm
         lstm_decode = self.lstm_decode(x12)
@@ -104,11 +106,15 @@ class DualPathCNNLstm(tf.keras.Model):
 
         return classifier
 
-    def summary(self):
+    def build_graph(self):
         x = Input(shape=(128, 128, 128, 3))
         model = Model(inputs=x, outputs=self.call(x))
-        return model.summary()
+        return model
 
 
 model = DualPathCNNLstm()
-k = model.summary()
+model.build(input_shape=(None, 128, 128, 128, 3))
+model.build_graph().summary()
+
+plot_model(model.build_graph(), to_file='model.png', dpi=96,
+           show_shapes=True, show_layer_names=True, expand_nested=False)
