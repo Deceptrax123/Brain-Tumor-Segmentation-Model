@@ -6,9 +6,9 @@ from keras.models import Model
 from keras.utils import plot_model
 
 
-class DualPathCNNLstm(tf.keras.Model):
+class UnetLSTM(tf.keras.Model):
     def __init__(self):
-        super(DualPathCNNLstm, self).__init__()
+        super(UnetLSTM, self).__init__()
 
         self.input_layer = Conv3D(kernel_size=(3, 3, 3), use_bias=True, kernel_initializer='he_normal',
                                   bias_initializer='he_normal', padding='same', filters=3)
@@ -127,7 +127,7 @@ class DualPathCNNLstm(tf.keras.Model):
         return model
 
 
-model = DualPathCNNLstm()
+model = UnetLSTM()
 model.build(input_shape=(None, 128, 128, 128, 3))
 model.build_graph().summary()
 
