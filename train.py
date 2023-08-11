@@ -1,7 +1,7 @@
 import tensorflow as tf
 from glob import glob
 from sklearn.model_selection import train_test_split
-from batch_generator import train_batch_generator, test_batch_generator
+from batch_generator import batch_generator
 from tried_models.model import make_model
 from scheduler import scheduler
 import datetime
@@ -64,8 +64,8 @@ def training_loop(traingen, testgen, callbacks, train_steps, test_steps):
         lr = scheduler(epoch+1, optimizer.learning_rate)
         optimizer.learning_rate = lr
 
-        traingen = train_batch_generator(train_sample_paths, batch_size)
-        testgen = test_batch_generator(test_sample_paths, batch_size)
+        traingen = batch_generator(train_sample_paths, batch_size, train=True)
+        testgen = batch_generator(test_sample_paths, batch_size, train=False)
 
         print(
             "--------------------------Start of Epoch %d---------------------------------" % (epoch+1))
