@@ -11,7 +11,7 @@ def rotate(volume):
 
         angle = random.choice(angles)
 
-        volume = ndimage.rotate(volume, angle, rehsape=False)
+        volume = ndimage.rotate(volume, angle, reshape=False)
         return volume
 
     augumented_volume = tf.numpy_function(sci_rotate, [volume], tf.float32)
