@@ -17,6 +17,10 @@ class ConvBlockEnc(tf.keras.layers.Layer):
                             kernel_initializer='he_normal', use_bias=True, bias_initializer='he_normal')
         self.bn1 = BatchNormalization()
 
+        self.conv2 = Conv3D(filters=filters, kernel_size=kernel_size, padding=padding,
+                            kernel_initializer='he_normal', use_bias=True, bias_initializer='he_normal')
+        self.bn2 = BatchNormalization()
+
     def call(self, input, training=False):
         x = self.conv(input)
         x = self.bn(x)
@@ -26,8 +30,8 @@ class ConvBlockEnc(tf.keras.layers.Layer):
         x = self.bn1(x)
         x = tf.nn.relu(x)
 
-        x = self.conv1(x)
-        x = self.bn1(x)
+        x = self.conv2(x)
+        x = self.bn2(x)
         x = tf.nn.relu(x)
 
         return x
@@ -44,6 +48,10 @@ class ConvBlockDec(tf.keras.layers.Layer):
                                        kernel_initializer='he_normal', use_bias=True, bias_initializer='he_normal')
         self.bn1 = BatchNormalization()
 
+        self.deconv2 = Conv3DTranspose(filters=filters, kernel_size=kernel_size, padding=padding,
+                                       kernel_initializer='he_normal', use_bias=True, bias_initializer='he_normal')
+        self.bn2 = BatchNormalization()
+
     def call(self, input, training=False):
         x = self.deconv(input)
         x = self.bn(x)
@@ -53,8 +61,8 @@ class ConvBlockDec(tf.keras.layers.Layer):
         x = self.bn1(x)
         x = tf.nn.relu(x)
 
-        x = self.deconv1(x)
-        x = self.bn1(x)
+        x = self.deconv2(x)
+        x = self.bn2(x)
         x = tf.nn.relu(x)
 
         return x

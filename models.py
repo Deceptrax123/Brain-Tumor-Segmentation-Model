@@ -1,5 +1,5 @@
 from keras.layers import Conv3D, MaxPool3D, Flatten, Dense, Reshape, AveragePooling3D, Conv3DTranspose, UpSampling3D, Activation
-from keras.layers import Input, Dropout, MaxPooling3D, BatchNormalization, Add, ConvLSTM2D, Bidirectional, Attention
+from keras.layers import Input, SpatialDropout3D, MaxPooling3D, BatchNormalization, Add, ConvLSTM2D, Bidirectional, Attention
 import tensorflow as tf
 from layers import ConvBlockEnc, ConvBlockDec, Lstm, Final
 from keras.models import Model
@@ -53,6 +53,11 @@ class UnetLSTM(tf.keras.Model):
         self.add5 = Add()
         self.add6 = Add()
 
+        # SpatialDropour3D
+        self.dp1 = SpatialDropout3D(rate=0.2)
+        self.dp2 = SpatialDropout3D(rate=0.2)
+        self.dp3 = SpatialDropout3D(rate=0.2)
+
         self.output_layer = Final(kernel_size=(3, 3, 3), filters=4)
 
     def call(self, input, training=False, **kwargs):
@@ -70,6 +75,9 @@ class UnetLSTM(tf.keras.Model):
         x21_down = self.maxpool2(x21)
 
         x31 = self.convenc_2(x21_down)
+
+        # handle early feature correlation using dropout
+        x31 = self.dp1(x31)
         x31_down = self.maxpool3(x31)
 
         x41 = self.convenc_3(x31_down)
@@ -82,6 +90,9 @@ class UnetLSTM(tf.keras.Model):
         x61_down = self.maxpool6(x61)
 
         x71 = self.convenc_6(x61_down)
+
+        # regularization
+        x71 = self.dp2(x71)
 
         # embeded lstm
         xlstm = self.lstm_down(x71)
@@ -99,6 +110,8 @@ class UnetLSTM(tf.keras.Model):
         x52_up = self.upsample3(x52)
 
         x42 = self.dconv_3(x52_up)
+        x42 = self.dp3(x42)
+
         x42 = self.add3([x41, x42])
         x42_up = self.upsample4(x42)
 
@@ -131,5 +144,5 @@ model = UnetLSTM()
 model.build(input_shape=(None, 128, 128, 128, 3))
 model.build_graph().summary()
 
-plot_model(model.build_graph(), to_file='model.png', dpi=96,
+plot_model(model.build_graph(), to_file='model_with_dropout.png', dpi=96,
            show_shapes=True, show_layer_names=True, expand_nested=False)
