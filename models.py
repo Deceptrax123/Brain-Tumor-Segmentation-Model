@@ -77,8 +77,8 @@ class UnetLSTM(tf.keras.Model):
         x31 = self.convenc_2(x21_down)
 
         # handle early feature correlation using dropout
-        x31 = self.dp1(x31)
-        x31_down = self.maxpool3(x31)
+        x31_reg = self.dp1(x31)
+        x31_down = self.maxpool3(x31_reg)
 
         x41 = self.convenc_3(x31_down)
         x41_down = self.maxpool4(x41)
@@ -92,10 +92,10 @@ class UnetLSTM(tf.keras.Model):
         x71 = self.convenc_6(x61_down)
 
         # regularization
-        x71 = self.dp2(x71)
+        x71_reg = self.dp2(x71)
 
         # embeded lstm
-        xlstm = self.lstm_down(x71)
+        xlstm = self.lstm_down(x71_reg)
 
         # decoding step and bring in the skip connections
         xlstm = self.dconv_0(xlstm)
@@ -110,7 +110,6 @@ class UnetLSTM(tf.keras.Model):
         x52_up = self.upsample3(x52)
 
         x42 = self.dconv_3(x52_up)
-        x42 = self.dp3(x42)
 
         x42 = self.add3([x41, x42])
         x42_up = self.upsample4(x42)
