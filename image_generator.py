@@ -24,7 +24,9 @@ def generate_image(paths, train):
         if (train == True):
             angles = [-60, -20, -10, -5, 0, 5, 10, 20, 60, 90]
             angle = random.choice(angles)
+
             sample = ndimage.rotate(sample, angle, reshape=False)
+            mask = ndimage.rotate(mask, angle, reshape=False)
 
         # Normalization
         normalized_sample = (sample-np.mean(sample, axis=0)
