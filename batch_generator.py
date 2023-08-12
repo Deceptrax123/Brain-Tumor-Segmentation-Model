@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 from image_generator import generate_image
-from augumentation import rotate
 
 # test generator
 
