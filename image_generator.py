@@ -22,14 +22,16 @@ def generate_image(paths, train):
                        example_id+".npy")
 
         if (train == True):
-            angles = [-60, -20, -10, -5, 0, 5, 10, 20, 60, 90]
+            angles = [0, 30, 45, 60, 90, 120, 135]
             angle = random.choice(angles)
 
             sample = ndimage.rotate(sample, angle, reshape=False)
             mask = ndimage.rotate(mask, angle, reshape=False)
 
         # Normalization
-        normalized_sample = (sample-np.mean(sample, axis=0)
-                             )/np.std(sample, axis=0)
+        for i in range(3):
+            sample[:, :, :, i] = (
+                sample[:, :, :, i]-np.mean(sample[:, :, :, i], axis=0))/np.std(sample[:, :, :, i], axis=0)
+            sample[:, :, :, i] = np.round(sample[:, :, :, i], 6)
 
-        yield normalized_sample, mask
+        yield sample, mask
