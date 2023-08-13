@@ -74,8 +74,11 @@ class Lstm(tf.keras.layers.Layer):
         self.lstm = ConvLSTM2D(filters=filters, kernel_size=kernel_size, padding=padding, activation='tanh',
                                recurrent_activation='hard_sigmoid', kernel_initializer='he_normal', use_bias=True, bias_initializer='he_normal', return_sequences=True)
 
+        self.bn = BatchNormalization()
+
     def call(self, input, training=False):
         x = self.lstm(input)
+        x = self.bn(x)
 
         return x
 
